@@ -42,6 +42,10 @@ pub struct UpgradeArgs {
     #[arg(long)]
     locked: bool,
 
+    /// Upgrade to latest compatible version
+    #[arg(long)]
+    skip_git_dependencies: bool,
+
     /// Use verbose output
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -530,7 +534,7 @@ fn exec(args: UpgradeArgs) -> CargoResult<()> {
             locked = metadata.packages;
         }
 
-        if !git_crates.is_empty() && args.compatible.as_bool() {
+        if !git_crates.is_empty() && args.compatible.as_bool() && !args.skip_git_dependencies {
             shell_status("Upgrading", "git dependencies")?;
             let mut cmd = std::process::Command::new("cargo");
             cmd.arg("update");
