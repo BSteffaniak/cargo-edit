@@ -625,7 +625,9 @@ fn exec(args: UpgradeArgs) -> CargoResult<()> {
         for (reason, deps) in categorize {
             use std::fmt::Write;
             write!(&mut note, "\n  {reason}: ")?;
-            if deps.len() <= 3 {
+            let number = deps.len();
+
+            if number <= 3 {
                 for (i, dep) in deps.into_iter().enumerate() {
                     if 0 < i {
                         note.push_str(", ");
@@ -633,9 +635,12 @@ fn exec(args: UpgradeArgs) -> CargoResult<()> {
                     note.push_str(&dep);
                 }
             } else {
-                let number = deps.len();
                 let plural = if number == 1 { "" } else { "s" };
                 write!(&mut note, "{number} package{plural}")?;
+            }
+
+            if args.skip_git_dependencies && reason == "git" && number > 0 {
+                write!(&mut note, " (skipped)")?;
             }
         }
         shell_note(&note)?;
