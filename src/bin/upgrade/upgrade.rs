@@ -5,9 +5,9 @@ use std::path::PathBuf;
 
 use anyhow::Context as _;
 use cargo_edit::{
-    CargoResult, CertsSource, CrateSpec, Dependency, IndexCache, LocalManifest, RustVersion,
-    Source, find_compatible_version, find_latest_version, registry_url, set_dep_version,
-    shell_note, shell_status, shell_warn, shell_write_stdout,
+    find_compatible_version, find_latest_version, registry_url, set_dep_version, shell_note,
+    shell_status, shell_warn, shell_write_stdout, CargoResult, CertsSource, CrateSpec, Dependency,
+    IndexCache, LocalManifest, RustVersion, Source,
 };
 use clap::Args;
 use indexmap::IndexMap;
@@ -40,6 +40,10 @@ pub struct UpgradeArgs {
 
     #[command(flatten)]
     verbose: clap_verbosity_flag::Verbosity,
+
+    /// Upgrade to latest compatible version
+    #[arg(long)]
+    skip_git_dependencies: bool,
 
     /// Unstable (nightly-only) flags
     #[arg(short = 'Z', value_name = "FLAG", global = true, value_enum)]
@@ -521,7 +525,7 @@ fn exec(args: UpgradeArgs) -> CargoResult<()> {
             locked = metadata.packages;
         }
 
-        if !git_crates.is_empty() && args.compatible.as_bool() {
+        if !git_crates.is_empty() && args.compatible.as_bool() && !args.skip_git_dependencies {
             shell_status("Upgrading", "git dependencies")?;
             let mut cmd = std::process::Command::new("cargo");
             cmd.arg("update");
