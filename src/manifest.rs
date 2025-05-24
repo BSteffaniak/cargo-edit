@@ -284,18 +284,6 @@ impl LocalManifest {
                 .any(|kind| kind.kind_table() == k.get())
             {
                 v.as_table_like_mut().into_iter().collect::<Vec<_>>()
-            } else if k == "patch" {
-                v.as_table_like_mut()
-                    .unwrap()
-                    .iter_mut()
-                    .filter_map(|(k, v)| {
-                        if k.get() == "crates-io" {
-                            v.as_table_like_mut()
-                        } else {
-                            None
-                        }
-                    })
-                    .collect::<Vec<_>>()
             } else if k == "workspace" {
                 v.as_table_like_mut()
                     .unwrap()
