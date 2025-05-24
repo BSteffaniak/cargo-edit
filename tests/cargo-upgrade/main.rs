@@ -21,6 +21,7 @@ mod locked_dry_run;
 mod lockfile;
 mod optional_dep;
 mod package_rust_version;
+mod patched;
 mod pinned;
 mod preserve_op;
 mod preserve_precision_major;
