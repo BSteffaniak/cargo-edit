@@ -234,11 +234,35 @@ fn exec(args: UpgradeArgs) -> CargoResult<()> {
         let mut crate_modified = false;
         let mut table = Vec::new();
         shell_status("Checking", &format!("{pkg_name}'s dependencies"))?;
+        let skip_deps = manifest
+            .data
+            .iter()
+            .filter(|(k, _)| *k == "patch")
+            .flat_map(|(_, v)| {
+                v.as_table_like()
+                    .unwrap()
+                    .iter()
+                    .filter_map(|(k, v)| {
+                        if k == "crates-io" {
+                            v.as_table_like()
+                                .map(|x| x.iter().map(|(k, _)| k).collect::<Vec<_>>())
+                        } else {
+                            None
+                        }
+                    })
+                    .flatten()
+            })
+            .map(ToString::to_string)
+            .collect::<Vec<_>>();
+
         for dep_table in manifest.get_dependency_tables_mut() {
             for (dep_key, dep_item) in dep_table.iter_mut() {
                 let mut reason = None;
 
                 let dep_key = dep_key.get();
+                if skip_deps.iter().any(|x| x == dep_key) {
+                    continue;
+                }
                 let dependency = match Dependency::from_toml(&manifest_path, dep_key, dep_item) {
                     Ok(dependency) => dependency,
                     Err(err) => {
